@@ -3,4 +3,4 @@ GLOBAL_dark_square = (162, 209, 73)
 GLOBAL_border = (87, 138, 52)
 GLOBAL_apple = (207, 83, 47)
 GLOBAL_width = 16
-GLOBAL_height = 14
+GLOBAL_height = 15

@@ -2,7 +2,7 @@ from PIL import ImageGrab
 import pyautogui
 import webbrowser
 import time
-from constants import GLOBAL_border, GLOBAL_dark_square, GLOBAL_light_square, GLOBAL_apple, GLOBAL_width
+from constants import GLOBAL_border, GLOBAL_dark_square, GLOBAL_height, GLOBAL_light_square, GLOBAL_apple, GLOBAL_width
 
 
 def open_game():
@@ -13,34 +13,6 @@ def open_game():
     pyautogui.click(x = 906, y = 873, clicks = 1, button = 'left')
     time.sleep(0.5)
 
-
-# def grab_board(dims):
-#     board = []
-#     board_row = ""
-#     #square = 48x48 pxls
-#     board_start = (24, 24)
-#     coords = board_start
-#     next_y = coords[1]
-#     screenshot = grab_and_crop(dims)
-#     while coords[1] < 720:
-#         #pyautogui.click(x = coords[0], y = coords[1], clicks = 0, button = 'left')
-#         current = screenshot.getpixel(coords)
-#             #print border/ keep in bounds
-#         if coords[0] >= 792:
-#             board.append(board_row)
-#             board_row = ""
-#             next_y = coords[1]+48
-#             next_x = board_start[0]
-#         else:
-#             next_x = coords[0]+48
-#             if current[2] >= 100: #print snake #blue(0, 0, 255)
-#                 board_row += "1"
-#             elif current[1] >= 100: # green (0, 255, 0)
-#                 board_row += "0"
-#             elif current[0] >= 100: #red (255, 0, 0)
-#                 board_row += "2"
-#         coords = (next_x, next_y)
-#     return board
 
 def grab_board(dims):
     board = ""
@@ -67,10 +39,6 @@ def grab_board(dims):
         coords = (next_x, next_y)
     return board
 
-# def print_board(board):
-#     for x in board:
-#         print(x)
-#     print()
 
 def print_board(board):
     count=0
@@ -92,16 +60,6 @@ def move(dir):
     elif dir=="d":
         pyautogui.press('down')
 
-#find coordinates of charecter in board
-# def find_in_board(charecter, board, snake_width):
-#     coord_y = -1
-#     for x in board:
-#         coord_y+=1
-#         coord_x = x.find(charecter)
-#         if coord_x != -1:
-#             coord = (coord_x, coord_y)
-#             return coord
-#     return -1
 def find_in_board(charecter, board, snake_width):
     index = board.find(charecter)
     if index != -1:
@@ -114,33 +72,52 @@ def find_in_board(charecter, board, snake_width):
 #direction snake should move towards apple
 def dir_to_apple(current_dir, apple, snake):
     dir = current_dir
-    if apple[0] > snake[0] and current_dir !="l":
+    if apple[0] > snake[0] and current_dir !="l" and current_dir !="r":
         dir = "r"
-    elif apple[0] < snake[0]  and current_dir !="r":
+    elif apple[0] < snake[0]  and current_dir !="r" and current_dir !="l":
         dir = "l"
-    elif apple[1] > snake[1] and current_dir !="u":
+    elif apple[1] > snake[1] and current_dir !="u" and current_dir !="d":
         dir = "d"
-    elif apple[1] < snake[1]  and current_dir !="d":
+    elif apple[1] < snake[1]  and current_dir !="d" and current_dir !="u":
         dir = "u"
     return dir
 
-# def find_path_to_apple(current_dir, apple, snake):
-#     moves = []
-#     return moves
+def stay_in_bounds(snake):
+    bound = 3
+    dir = -1
+    if snake[0]<bound:
+        dir = ("d", "r")
+    elif snake[1] <bound:
+        dir = ("r", "d")
+    elif snake[0] > (GLOBAL_width-bound):
+        dir = ("d", "l")
+    elif snake[1] > (GLOBAL_height-bound): 
+        dir = ("l", "u")
+    return dir
 
 
 def move_to_apple(current_dir, board, snake_width, dims):
     snake_pos =  find_in_board("1", board, snake_width) #snake=1 on board
     apple_pos = find_in_board("2", board, snake_width) #apple = 2
     gameover = False;
-    while(apple_pos != -1 and not gameover):
-        gameover =  check_gameover(dims)
-        direction_to_apple = dir_to_apple(current_dir, apple_pos, snake_pos)
-        current_dir = direction_to_apple
-        move(direction_to_apple) # r, u, l, d
-        board = grab_board(dims) #update board
-        snake_pos =  find_in_board("1", board, snake_width) #snake=2 on board
-        apple_pos = find_in_board("2", board, snake_width) #apple = 1
+    while(not gameover):
+        if(apple_pos==-1):
+             dirs = stay_in_bounds(snake_pos) # r, u, l, d
+             if dirs != -1:
+                move(dirs[0])
+                move(dirs[1])
+        else:
+            gameover =  check_gameover(dims)
+            direction_to_apple = dir_to_apple(current_dir, apple_pos, snake_pos)
+            current_dir = direction_to_apple
+            move(direction_to_apple) # r, u, l, d
+            board = grab_board(dims) #update board
+            snake_pos =  find_in_board("1", board, snake_width) #snake=2 on board
+            apple_pos = find_in_board("2", board, snake_width) #apple = 1
+            dirs = stay_in_bounds(snake_pos) # r, u, l, d
+            if dirs != -1:
+                move(dirs[0])
+                move(dirs[1])
     return gameover
     
 def check_gameover(dims):
